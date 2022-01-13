@@ -1,3 +1,7 @@
+require_relative 'lox'
+require_relative 'token'
+require 'byebug'
+
 class Scanner
   KEYWORDS = {
     and: :AND,
@@ -12,7 +16,7 @@ class Scanner
     print: :PRINT,
     return: :RETURN,
     super: :SUPER,
-    this: :THIS.
+    this: :THIS,
     true: :TRUE,
     var: :VAR,
     while: :WHILE
@@ -22,7 +26,7 @@ class Scanner
     @source = source
     @tokens = []
     @start = 0
-    @current = 0
+    @current = -1
     @line = 1
   end
 
@@ -32,7 +36,7 @@ class Scanner
       scan_token
     end
 
-    tokens << Token.new(:EOF, "", nil, @line)
+    @tokens << Token.new(:EOF, "", nil, @line)
   end
 
   private
@@ -46,11 +50,7 @@ class Scanner
     @source[@current]
   end
 
-  def add_token(type)
-    add_token(type, nil)
-  end
-
-  def add_token(type, literal)
+  def add_token(type, literal = nil)
     text = @source[@start..@current]
     @tokens << Token.new(type, text, literal, @line)
   end
@@ -74,7 +74,7 @@ class Scanner
 
   def string
     while (peek != '"' && !at_end?)
-      @line += if peek == "\n"
+      @line += 1 if peek == "\n"
       advance
     end
 
@@ -167,7 +167,7 @@ class Scanner
     else
       if digit?(c)
         number
-      elsif alpha?
+      elsif alpha?(c)
         indentifier
       else
         Lox.error(@line, "Unexpected character")

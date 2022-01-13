@@ -6,7 +6,7 @@ class Token
     @line = line
   end
 
-  def to_str
-    return "#{type} #{lexeme} #{literal}"
+  def to_s
+    "#{@type} #{@lexeme} #{@literal}"
   end
 end
