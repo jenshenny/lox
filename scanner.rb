@@ -1,21 +1,21 @@
 class Scanner
   KEYWORDS = {
-    and: AND,
-    class: CLASS,
-    else: ELSE,
-    false: FALSE,
-    for: FOR,
-    fun: FUN,
-    if: IF,
-    nil: NIL,
-    or: OR,
-    print: PRINT,
-    return: RETURN,
-    super: SUPER,
-    this: THIS.
-    true: TRUE,
-    var: VAR,
-    while: WHILE
+    and: :AND,
+    class: :CLASS,
+    else: :ELSE,
+    false: :FALSE,
+    for: :FOR,
+    fun: :FUN,
+    if: :IF,
+    nil: :NIL,
+    or: :OR,
+    print: :PRINT,
+    return: :RETURN,
+    super: :SUPER,
+    this: :THIS.
+    true: :TRUE,
+    var: :VAR,
+    while: :WHILE
   }
 
   def initialize(source)
@@ -32,7 +32,7 @@ class Scanner
       scan_token
     end
 
-    tokens << Token.new(EOF, "", nil, @line)
+    tokens << Token.new(:EOF, "", nil, @line)
   end
 
   private
@@ -86,7 +86,7 @@ class Scanner
     advance
 
     value = source[(@start + 1)..(@current - 1)]
-    add_token(STRING, value)
+    add_token(:STRING, value)
   end
 
   def digit?(c)
@@ -101,14 +101,14 @@ class Scanner
       advance while digit?(peek)
     end
     
-    add_token(NUMBER, @source[@start..@current].to_f)
+    add_token(:NUMBER, @source[@start..@current].to_f)
   end
 
   def indentifier
     advance while alphanumeric?(peek)
 
     text = @source[@start..@current]
-    type = KEYWORDS[text.to_sym] || IDENTIFIER
+    type = KEYWORDS[text.to_sym] || :IDENTIFIER
     add_token(type)
   end
 
@@ -124,38 +124,38 @@ class Scanner
     c = advance
     case c
     when '('
-      add_token(LEFT_PAREN)
+      add_token(:LEFT_PAREN)
     when ')'
-      add_token(RIGHT_PAREN)
+      add_token(:RIGHT_PAREN)
     when '{'
-      add_token(LEFT_BRACE)
+      add_token(:LEFT_BRACE)
     when '}'
-      add_token(RIGHT_BRACE)
+      add_token(:RIGHT_BRACE)
     when ','
-      add_token(COMMA)
+      add_token(:COMMA)
     when '.'
-      add_token(DOT)
+      add_token(:DOT)
     when '-'
-      add_token(MINUS)
+      add_token(:MINUS)
     when '+'
-      add_token(PLUS)
+      add_token(:PLUS)
     when ';'
-      add_token(SEMICOLON)
+      add_token(:SEMICOLON)
     when '*'
-      add_token(STAR)
+      add_token(:STAR)
     when '!'
-      add_token(match('=') ? BANG_EQUAL : BANG)
+      add_token(match('=') ? :BANG_EQUAL : :BANG)
     when '='
-      add_token(match('=') ? EQUAL_EQUAL : BANG)
+      add_token(match('=') ? :EQUAL_EQUAL : :BANG)
     when '<'
-      add_token(match('=') ? LESS_EQUAL : BANG)
+      add_token(match('=') ? :LESS_EQUAL : :BANG)
     when '>'
-      add_token(match('=') ? GREATER_EQUAL : BANG)
+      add_token(match('=') ? :GREATER_EQUAL : :BANG)
     when '/'
       if match('/')
         advance while (peek != '\n' && !at_end?)
       else
-        add_token(SLASH)
+        add_token(:SLASH)
       end
     when ' '
     when '\r'
