@@ -31,7 +31,6 @@ class Lox
       print "> "
       line = gets&.chomp
       break if line.nil? || line.downcase == "exit"
-      # puts line
       run(line)
       @had_error = false
     end

@@ -7,6 +7,7 @@ class Token
   end
 
   def to_s
-    "#{@type} #{@lexeme} #{@literal}"
+    # print null for dart tests
+    "#{@type} #{@lexeme} #{@literal || "null"}"
   end
 end

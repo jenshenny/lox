@@ -1,4 +1,4 @@
 #!/usr/bin/env ruby
 
-require_relative "lox"
+require_relative "../src/lox"
 Lox.main(ARGV)

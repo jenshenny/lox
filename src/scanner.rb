@@ -1,6 +1,5 @@
 require_relative 'lox'
 require_relative 'token'
-require 'byebug'
 
 class Scanner
   KEYWORDS = {
@@ -42,7 +41,7 @@ class Scanner
   private
 
   def at_end?
-    @current >= @source.length
+    @current >= @source.length - 1
   end
 
   def advance
@@ -51,25 +50,25 @@ class Scanner
   end
 
   def add_token(type, literal = nil)
-    text = @source[@start..@current]
+    text = @source[@start+1..@current]
     @tokens << Token.new(type, text, literal, @line)
   end
 
   def match(expected)
     return false if at_end?
-    return false if @source[@current] != expected
+    return false if @source[@current + 1] != expected
     @current += 1
     true
   end
 
   def peek
-    return '\0' if at_end?
-    @source[@current]
+    return "\0" if at_end?
+    @source[@current + 1]
   end
 
   def peek_next
-    return '\0' if @current + 1 >= @source.length
-    @source[@current + 1]
+    return "\0" if @current + 2 >= @source.length
+    @source[@current + 2]
   end
 
   def string
@@ -85,7 +84,7 @@ class Scanner
 
     advance
 
-    value = source[(@start + 1)..(@current - 1)]
+    value = @source[(@start + 2)..(@current - 1)]
     add_token(:STRING, value)
   end
 
@@ -94,20 +93,24 @@ class Scanner
   end
 
   def number
-    advance while digit?(peek)
+    while digit?(peek)
+      advance
+    end
 
     if peek == '.' && digit?(peek_next)
       advance
-      advance while digit?(peek)
+      while digit?(peek)
+        advance
+      end
     end
-    
-    add_token(:NUMBER, @source[@start..@current].to_f)
+
+    add_token(:NUMBER, @source[(@start + 1)..@current].to_f)
   end
 
   def indentifier
     advance while alphanumeric?(peek)
 
-    text = @source[@start..@current]
+    text = @source[@start + 1..@current]
     type = KEYWORDS[text.to_sym] || :IDENTIFIER
     add_token(type)
   end
@@ -121,8 +124,8 @@ class Scanner
   end
 
   def scan_token
-    c = advance
-    case c
+    char = advance
+    case char
     when '('
       add_token(:LEFT_PAREN)
     when ')'
@@ -146,28 +149,28 @@ class Scanner
     when '!'
       add_token(match('=') ? :BANG_EQUAL : :BANG)
     when '='
-      add_token(match('=') ? :EQUAL_EQUAL : :BANG)
+      add_token(match('=') ? :EQUAL_EQUAL : :EQUAL)
     when '<'
-      add_token(match('=') ? :LESS_EQUAL : :BANG)
+      add_token(match('=') ? :LESS_EQUAL : :LESS)
     when '>'
-      add_token(match('=') ? :GREATER_EQUAL : :BANG)
+      add_token(match('=') ? :GREATER_EQUAL : :GREATER)
     when '/'
       if match('/')
-        advance while (peek != '\n' && !at_end?)
+        advance while (peek != "\n" && !at_end?)
       else
         add_token(:SLASH)
       end
     when ' '
-    when '\r'
-    when '\t'
-    when '\n'
+    when "\r"
+    when "\t"
+    when "\n"
       @line += 1
     when '"'
       string
     else
-      if digit?(c)
+      if digit?(char)
         number
-      elsif alpha?(c)
+      elsif alpha?(char)
         indentifier
       else
         Lox.error(@line, "Unexpected character")
