@@ -1,0 +1,60 @@
+#!/usr/bin/env ruby
+
+if ARGV.size != 1
+  puts "Usage: generate_ast <output directory>"
+  exit(65)
+end
+
+dir = ARGV.first
+
+expr_classes = [
+  { name: "Binary", fields: [:left, :operator, :right] },
+  { name: "Grouping", fields: [:expression] },
+  { name: "Literal", fields: [:value] },
+  { name: "Unary", fields: [:operator, :right] }
+]
+
+def define_ast(dir, base_name, types)
+  path = "#{dir}/#{base_name.downcase}.rb"
+  File.open(path, "w") do |f|
+    f.write("class #{base_name}\n")
+
+    visitor_methods = types.map do |type|
+      "    def visit_#{type[:name].downcase}_expr(visitor); end"
+    end.join("\n")
+
+    f.write("  class Visitor\n")
+    f.write(visitor_methods)
+    f.write("\n  end\n\n")
+
+    f.write("  def accept(visitor); end\n\n")
+
+    class_types = types.map do |type|
+      params = type[:fields].map{ |field| "#{field}, " }.join.chomp(", ")
+      params_in_sym = type[:fields].map{ |field| ":#{field}, " }.join.chomp(", ")
+
+      assignments = type[:fields].map do |field|
+        "@#{field} = #{field}"
+      end.join("\n      ")
+
+      type =
+        "  class #{type[:name]} < #{base_name}\n" \
+        "    attr_reader #{params_in_sym}\n" \
+        "\n" \
+        "    def initialize(#{params})\n" \
+        "      #{assignments}\n" \
+        "    end\n" \
+        "\n" \
+        "    def accept(visitor)\n" \
+        "      visitor.visit_#{type[:name].downcase}_expr(self)\n" \
+        "    end\n" \
+        "  end\n"
+
+    end.join("\n")
+
+    f.write(class_types)
+    f.write("end\n")
+  end
+end
+
+define_ast(dir, "Expr", expr_classes)
