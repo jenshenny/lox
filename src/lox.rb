@@ -1,4 +1,6 @@
 require_relative 'scanner'
+require_relative 'parser'
+require_relative 'ast_printer'
 
 class Lox
   def initialize
@@ -42,11 +44,26 @@ class Lox
     scanner = Scanner.new(source)
     tokens = scanner.scan_tokens
 
-    tokens.each { |token| puts token }
+    # tokens.each { |token| puts token }
+
+    parser = Parser.new(tokens)
+    expression = parser.parse
+
+    return if @had_error
+
+    puts AstPrinter.new.print(expression)
   end
 
   def self.report(line, where, message)
     puts "[line #{line}] Error#{where}: #{message}"
     @had_error = true
+  end
+
+  def self.error(token, message)
+    if token.type == :EOF
+      report(token.line, " at end", message)
+    else
+      report(token.line, " at '" + token.lexeme + "'", message)
+    end
   end
 end
