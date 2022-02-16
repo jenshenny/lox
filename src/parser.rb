@@ -1,5 +1,4 @@
 require_relative "expr"
-require "byebug"
 
 class Parser
   class ParseError < RuntimeError; end

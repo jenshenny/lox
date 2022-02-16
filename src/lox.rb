@@ -1,10 +1,12 @@
 require_relative 'scanner'
 require_relative 'parser'
 require_relative 'ast_printer'
+require_relative 'interpreter'
 
 class Lox
   def initialize
     @had_error = false
+    @runtime_error = false
   end
 
   def self.main(args)
@@ -26,6 +28,7 @@ class Lox
   def run_file(path)
     run(File.read(path))
     exit(65) if @had_error
+    exit(70) if @runtime_error
   end
 
   def run_prompt
@@ -36,6 +39,11 @@ class Lox
       run(line)
       @had_error = false
     end
+  end
+
+  def self.runtime_error(error)
+    puts error.message
+    runtime_error = true
   end
 
   private
@@ -51,7 +59,9 @@ class Lox
 
     return if @had_error
 
-    puts AstPrinter.new.print(expression)
+    # puts AstPrinter.new.print(expression)
+
+    Interpreter.new.interpret(expression)
   end
 
   def self.report(line, where, message)
